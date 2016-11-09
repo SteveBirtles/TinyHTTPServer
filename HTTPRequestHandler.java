@@ -1,6 +1,9 @@
 import java.io.IOException;
-import java.net.Inet4Address;
+import java.util.Enumeration;
 import javax.servlet.ServletException;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.eclipse.jetty.server.Request;
@@ -70,11 +73,30 @@ public class HTTPRequestHandler extends AbstractHandler {
         baseRequest.setHandled(true);
     }
 
+    public static String getMyNetworkAdapter() throws SocketException
+    {
+        Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+        while (interfaces.hasMoreElements()) 
+        {
+            NetworkInterface iface = interfaces.nextElement();
+
+            if (iface.isLoopback() || !iface.isUp()) continue; // filters out 127.0.0.1 and inactive interfaces
+
+            Enumeration<InetAddress> addresses = iface.getInetAddresses();
+            while(addresses.hasMoreElements()) 
+            {
+                InetAddress addr = addresses.nextElement();
+                return (iface.getDisplayName() + " " + addr.getHostAddress());
+            }
+        }
+        return null;
+    }
+
     public static void main(String[] args) throws Exception {
         Server server = new Server(80);
         server.setHandler(new HTTPRequestHandler());
         server.start();
-        System.out.println("* * * Server is live on IP " + Inet4Address.getLocalHost().getHostAddress() + " * * *");
+        System.out.println("Server is live on " + getMyNetworkAdapter());
         System.out.println("Close with CTRL+SHIFT+R in BlueJ main window or CTRL+C on command line.");
         System.out.println("-----------------------------------------------------------------------");      
         server.join();
