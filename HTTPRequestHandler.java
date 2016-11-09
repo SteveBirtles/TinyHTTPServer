@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import javax.servlet.ServletException;
 import java.net.InetAddress;
+import java.net.Inet4Address;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import javax.servlet.http.HttpServletRequest;
@@ -82,11 +83,15 @@ public class HTTPRequestHandler extends AbstractHandler {
 
             if (iface.isLoopback() || !iface.isUp()) continue; // filters out 127.0.0.1 and inactive interfaces
 
-            Enumeration<InetAddress> addresses = iface.getInetAddresses();
-            while(addresses.hasMoreElements()) 
-            {
+            Enumeration<InetAddress> addresses = iface.getInetAddresses();            
+
+            if (iface.getDisplayName().startsWith("wlan0")) continue;
+
+            while(addresses.hasMoreElements())             
+            {                
                 InetAddress addr = addresses.nextElement();
-                return (iface.getDisplayName() + " " + addr.getHostAddress());
+                if (!(addr instanceof Inet4Address)) continue;
+                return (addr.getHostAddress());
             }
         }
         return null;
