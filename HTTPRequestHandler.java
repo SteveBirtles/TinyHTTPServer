@@ -51,8 +51,8 @@ public class HTTPRequestHandler extends AbstractHandler {
                     String value = q.split("=")[1];
                     requestText += "\t" + variable + " = " + value;         
 
-                    if (variable.equals("colour") && value.equals("red")) style += "color:\red;";
-                    if (variable.equals("colour") && value.equals("blue")) style += "color:\blue;";
+                    if (variable.equals("colour") && value.equals("red")) style += "color:red;";
+                    if (variable.equals("colour") && value.equals("blue")) style += "color:blue;";
                     if (variable.equals("size") && value.equals("tiny")) style += "font-size:6pt;";
                     if (variable.equals("size") && value.equals("huge")) style += "font-size:50pt;";
                 }
