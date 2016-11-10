@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 public class HTTPRequestHandler extends AbstractHandler {
 
     private StringBuilder history;
+    private String style;
 
     public HTTPRequestHandler()
     {
@@ -34,31 +35,43 @@ public class HTTPRequestHandler extends AbstractHandler {
         Date dateobj = new Date();
         System.out.println();
 
-        String requestText = "[" + request.getRemoteAddr()  + "  |  " + df.format(dateobj) + " | ";
-        requestText += request.getMethod() + "] " + request.getRequestURI() + " ... ";
+        String requestText = "[ " + request.getRemoteAddr()  + "  |  " + df.format(dateobj) + "  |  ";
+        requestText += request.getMethod() + " ]\t" + request.getRequestURI();
+        style = "";
 
         if (request.getQueryString() != null)
         {
+            if (request.getQueryString().toLowerCase().equals("shutdown")) terminate();
+
             for(String q : request.getQueryString().split("&"))
             {
                 if (q.contains("=")) 
                 {
                     String variable = q.split("=")[0];
                     String value = q.split("=")[1];
-                    requestText += "   " + variable + " = " + value;                                         
+                    requestText += "\t" + variable + " = " + value;         
+
+                    if (variable.equals("colour") && value.equals("red")) style += "color:\red;";
+                    if (variable.equals("colour") && value.equals("blue")) style += "color:\blue;";
+                    if (variable.equals("size") && value.equals("tiny")) style += "font-size:6pt;";
+                    if (variable.equals("size") && value.equals("huge")) style += "font-size:50pt;";
                 }
                 else               
                 {
-                    requestText += "   Invalid query string component (" + q + ")";
+                    requestText += "\tInvalid query string component (" + q + ")";
                 }
             }
         }
         else
         {
-            requestText += "   No query string supplied";
+            requestText += "\tNo query string supplied";
         }
         System.out.println(requestText);
-        history.append("<p>" + requestText + "</p>");
+
+        if (!request.getRequestURI().equals("/"))
+        {
+            history.append("<p style=\"" + style + "\">" + request.getRequestURI().replace('/', ' ').replace("%20", " ") + "</p>");
+        }
 
         StringBuilder responseText = new StringBuilder();
         responseText.append("<!DOCTYPE html>\n");
@@ -105,5 +118,12 @@ public class HTTPRequestHandler extends AbstractHandler {
         System.out.println("Close with CTRL+SHIFT+R in BlueJ main window or CTRL+C on command line.");
         System.out.println("-----------------------------------------------------------------------");      
         server.join();
+    }
+
+    public static void terminate()
+    {
+        System.out.println("Shutting down server!");
+        System.out.println("-----------------------------------------------------------------------");      
+        System.exit(0);
     }
 }
